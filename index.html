@@ -77,7 +77,13 @@ h2.sec{font:700 22px/1.2 "Barlow Condensed",sans-serif;margin:22px 0 8px}
 .timer-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:8px}
 .clock{font:800 38px/1 "Barlow Condensed",sans-serif;min-width:84px;font-variant-numeric:tabular-nums}
 .clock.run{color:var(--p2)}.clock.over{color:var(--bad)}
-.tlabel{flex:1;color:var(--muted);font-size:13px;line-height:1.2}
+.elapsed{font:700 15px/1.1 "Barlow Condensed",sans-serif;color:var(--muted);text-align:center;min-width:52px}
+.elapsed b{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.start-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.tlabel{flex:1;min-width:0;color:var(--muted);font-size:12px;line-height:1.2}
+.timer .btn{padding:8px 9px;white-space:nowrap;min-height:40px}
+.timer .clock{min-width:70px;font-size:34px}
+@media (max-width:380px){.tlabel{display:none}.timer-in{justify-content:space-between}}
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
 .day{border:1px solid var(--line);border-radius:9px;padding:6px 0;text-align:center;font-size:12px;color:var(--muted)}
 .day b{display:block;font:800 22px/1.1 "Barlow Condensed",sans-serif;color:var(--ink);min-height:24px}
@@ -134,6 +140,7 @@ details.tips li{margin:6px 0}
       <div class="next"><span class="muted">Próximo treino</span><b id="nextFicha">Ficha A</b></div>
       <div class="muted" style="margin-top:8px;font-size:14px" id="cicloTxt"></div>
       <div class="bar" id="cicloBar"><i></i></div>
+      <div class="start-row" id="startRow"></div>
     </div>
     <div class="seg" role="group" aria-label="Ficha">
       <button data-f="A" aria-pressed="true">Ficha A</button>
@@ -196,6 +203,7 @@ details.tips li{margin:6px 0}
 
 <div class="timer" role="region" aria-label="Descanso">
   <div class="timer-in">
+    <div class="elapsed" id="elapsed" hidden>Treino<b id="elapsedT">0:00</b></div>
     <div class="clock" id="clock" aria-live="polite">0:00</div>
     <div class="tlabel" id="tlabel">Descanso</div>
     <button class="btn" data-t="45">45 s</button>
@@ -208,6 +216,7 @@ details.tips li{margin:6px 0}
   <h2 id="dlgTitle">Check-in</h2>
   <div class="field"><label for="ciData">Data</label><input type="date" id="ciData" required></div>
   <div class="field"><label>Ficha</label><div class="seg" id="ciFicha"><button type="button" data-cf="A">Ficha A</button><button type="button" data-cf="B">Ficha B</button></div></div>
+  <div class="field" id="ciHoraBox" hidden><label>Horário</label><div id="ciHora" class="cond" style="font-size:20px"></div></div>
   <div class="field"><label>Séries feitas</label><div id="ciSeries" class="cond" style="font-size:24px"></div></div>
   <div class="field"><label>Como foi o treino</label><div class="notas" id="ciNota"></div></div>
   <div class="field"><label for="ciObs">Observação (opcional)</label><textarea id="ciObs" rows="2" maxlength="200"></textarea></div>
@@ -219,36 +228,37 @@ details.tips li{margin:6px 0}
 <script>
 // ================= DADOS =================
 const EX = {
-  legpress:["Leg press 45° (pés altos e afastados)","dWTiU23iVgg"],
+  legpress:["Leg press 45° (pés altos e afastados)","waAxlYvtCcI"],
   crunch:["Abdominal crunch no solo","c4yjTN9uKRY"],
   puxada:["Puxada frontal aberta (pulley)","BOW9my4J_ek"],
-  stiff:["Stiff com halteres","601YoPL6y6E"],
+  stiff:["Stiff com halteres","XlGjQYUN4RQ"],
   supinoreto:["Supino reto com halteres","tDxKGeY-hjQ"],
   roscadireta:["Rosca direta com halteres (em pé)","BZJZTi6WvlU",1],
-  desenv:["Desenvolvimento na máquina","JyU4mXpxyfQ"],
+  desenv:["Desenvolvimento na máquina","HK5YjzS5vko",1],
   ponte:["Ponte de glúteo com halter no solo","-ZDSyp5eWMc",1],
   tricorda:["Tríceps na polia com corda","7le1JRUUagM"],
-  lateral:["Elevação lateral com halteres","jannLx4RxKo"],
+  lateral:["Elevação lateral com halteres","pgpbaY6zjGs"],
   abdutora:["Cadeira abdutora","50qHGus1TZk"],
   pantstep:["Panturrilha em pé com halteres no step","cklp_Xh5V8M"],
-  hack:["Agachamento no hack","Whp712OHPl8"],
-  martelo:["Rosca martelo com halteres (em pé)","1-xCKLVxqqg"],
-  supinoinc:["Supino inclinado com halteres","RGeSgQmO1EU"],
+  hack:["Agachamento no hack","lQo21In1LZs",1],
+  martelo:["Rosca martelo com halteres (em pé)","5vPGH1uTtbs"],
+  supinoinc:["Supino inclinado com halteres","rCPwrZkrVVQ"],
   remada:["Remada com halteres apoiada no banco inclinado","RJOIor7FPno"],
-  flexora:["Cadeira flexora","3qf7A-Wae0M"],
+  flexora:["Cadeira flexora","_TDeIBSoKzk"],
   infra:["Abdominal infra no solo","IIMzCZXqIeA"],
   frances:["Tríceps francês na polia com corda","VW6bsCdeITc",1],
-  facepull:["Face pull na polia","kYMTJAx_dTM"],
-  sumo:["Agachamento sumô com halter","ED9NUglcBrs"],
-  pantsent:["Panturrilha sentado (máquina)","N_bpzfkp0mg"],
-  encolh:["Encolhimento com halteres (em pé)","E-xSP7tVA8I"]
+  facepull:["Face pull na polia","_HntOL1mlR8"],
+  sumo:["Agachamento sumô com halter","XypoxVWr0zs"],
+  pantsent:["Panturrilha sentado (máquina)","Nap62yku2ks"],
+  encolh:["Encolhimento com halteres (em pé)","YeILDnoeYEk"],
+  frontal:["Elevação frontal com halteres","jhxLYSm_P-k"]
 };
 const FICHAS = {
-  A:[[["legpress","3","8–12",3],["crunch","3","12–15",3]],[["puxada","3","8–12",3],["stiff","3","8–12",3]],
+  A:[[["legpress","3","8–12",3],["infra","3","12–15",3]],[["puxada","3","8–12",3],["stiff","3","8–12",3]],
      [["supinoreto","3","8–12",3],["roscadireta","3","10–12",3]],[["desenv","3","8–12",3],["ponte","3","10–15",3]],
      [["tricorda","2–3","10–15",3],["lateral","2–3","10–15",3]],[["abdutora","2","12–15",2],["pantstep","2","12–15",2]]],
   B:[[["hack","3","8–12",3],["martelo","3","10–12",3]],[["supinoinc","3","8–12",3],["remada","3","8–12",3]],
-     [["flexora","3","10–12",3],["infra","3","12–15",3]],[["frances","2–3","10–15",3],["lateral","2–3","10–15",3]],
+     [["flexora","3","10–12",3],["infra","3","12–15",3]],[["frances","2–3","10–15",3],["frontal","2–3","10–15",3]],
      [["facepull","3","12–15",3],["sumo","3","8–12",3]],[["pantsent","2","12–15",2],["encolh","2","10–12",2]]]
 };
 const CICLO_MAX = 15, CICLO_AVISO = 13;
@@ -259,7 +269,7 @@ const KEY = "treinoAB.v1";
 const hoje = () => { const d=new Date(); return iso(d); };
 function iso(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function parse(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
-function fresh(){ return {ficha:"A",done:{A:{},B:{}},loads:{},checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{}}; }
+function fresh(){ return {ficha:"A",done:{A:{},B:{}},loads:{},checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null}; }
 let S;
 try{ S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){ S = fresh(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -318,7 +328,7 @@ function exBlock(id,s,r,n,i,j){
   const dots=d.querySelector(".dots");
   for(let k=0;k<n;k++){
     const key=`${i}${j}-${k}`, b=el("button",{class:"dot","aria-label":`Série ${k+1} de ${nome}`,"aria-pressed":!!S.done[S.ficha][key]},String(k+1));
-    b.onclick=()=>{ const on=!S.done[S.ficha][key]; S.done[S.ficha][key]=on; b.setAttribute("aria-pressed",on); save(); updateProgress(); if(on) startTimer(i===5?40:50,nome); };
+    b.onclick=()=>{ const on=!S.done[S.ficha][key]; S.done[S.ficha][key]=on; b.setAttribute("aria-pressed",on); save(); updateProgress(); if(on && j===1) startTimer(i===5?40:50,`Superset ${i+1}`); };
     dots.appendChild(b);
   }
   const inp=d.querySelector("input");
@@ -329,7 +339,7 @@ function exBlock(id,s,r,n,i,j){
     if(existing){ existing.remove(); vb.textContent="▶ Ver execução"; openPlayer=null; return; }
     if(openPlayer){ openPlayer.p.remove(); openPlayer.b.textContent="▶ Ver execução"; }
     const p=el("div",{class:"player "+(vert?"v":"h")});
-    p.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${yt}?playsinline=1&rel=0&autoplay=1" title="${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    p.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${yt}?playsinline=1&rel=0&autoplay=1" title="${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
     vb.parentNode.appendChild(p); vb.textContent="Fechar vídeo"; openPlayer={p,b:vb};
   };
   return d;
@@ -367,6 +377,23 @@ function novoCiclo(){
 document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ S.ficha=b.dataset.f; save(); renderTreino(); });
 $("reset").onclick=()=>{ if(confirm("Zerar as séries marcadas desta ficha?")){ S.done[S.ficha]={}; save(); renderTreino(); } };
 
+// ================= INÍCIO DO TREINO =================
+const hm = ts => { const d=new Date(ts); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
+const dur = ms => { const s=Math.max(0,Math.floor(ms/1000)), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return h?`${h}:${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`:`${m}:${String(x).padStart(2,"0")}`; };
+function renderStart(){
+  const r=$("startRow"), s=S.sessao;
+  if(s){
+    r.innerHTML=`<span>Treino iniciado às <b>${hm(s.inicio)}</b> · Ficha ${s.ficha}</span><button class="link" id="cancelStart">Cancelar início</button>`;
+    $("cancelStart").onclick=()=>{ if(confirm("Cancelar o início deste treino?")){ S.sessao=null; save(); renderStart(); } };
+  }else{
+    r.innerHTML=`<span class="muted">Chegou na academia?</span><button class="btn dark" id="startBtn">Iniciar treino</button>`;
+    $("startBtn").onclick=()=>{ S.sessao={ficha:S.ficha,inicio:Date.now()}; save(); renderStart(); toast(`Treino iniciado às ${hm(S.sessao.inicio)}`); };
+  }
+  $("elapsed").hidden=!s; tickElapsed();
+}
+function tickElapsed(){ if(S.sessao) $("elapsedT").textContent=dur(Date.now()-S.sessao.inicio); }
+setInterval(tickElapsed,1000);
+
 // ================= CHECK-IN =================
 let editId=null, ciF="A", ciNota=4;
 const notaBox=$("ciNota");
@@ -378,12 +405,16 @@ $("concluir").onclick=()=>{
   editId=null; ciF=S.ficha; ciNota=4; $("dlgTitle").textContent="Concluir treino";
   $("ciData").value=hoje(); $("ciObs").value="";
   const s=seriesInfo(ciF); $("ciSeries").textContent=`${s.ok} de ${s.tot}`;
+  if(S.sessao){ ciF=S.sessao.ficha; const s2=seriesInfo(ciF); $("ciSeries").textContent=`${s2.ok} de ${s2.tot}`; }
+  $("ciHoraBox").hidden=!S.sessao;
+  if(S.sessao) $("ciHora").textContent=`${hm(S.sessao.inicio)} até ${hm(Date.now())} · ${Math.round((Date.now()-S.sessao.inicio)/60000)} min`;
   paintFicha(); paintNota(); $("dlg").showModal();
 };
 function editCheckin(id){
   const c=S.checkins.find(x=>x.id===id); if(!c) return;
   editId=id; ciF=c.ficha; ciNota=c.nota||4; $("dlgTitle").textContent="Editar check-in";
   $("ciData").value=c.date; $("ciObs").value=c.obs||""; $("ciSeries").textContent=`${c.feitas} de ${c.total}`;
+  $("ciHoraBox").hidden=!c.inicio; if(c.inicio) $("ciHora").textContent=`${hm(c.inicio)} até ${hm(c.fim)} · ${c.duracao} min`;
   paintFicha(); paintNota(); $("dlg").showModal();
 }
 $("ciCancel").onclick=()=>$("dlg").close();
@@ -397,9 +428,11 @@ $("ciForm").addEventListener("submit",e=>{
   }
   const s=seriesInfo(ciF), cargas={};
   exIds(ciF).forEach(id=>{ const v=num(S.loads[id]); if(v!==null) cargas[id]=v; });
-  S.checkins.push({id:Date.now().toString(36),ts:Date.now(),date,ficha:ciF,feitas:s.ok,total:s.tot,nota:ciNota,obs,cargas,ciclo:S.ciclo.n});
+  const ci={id:Date.now().toString(36),ts:Date.now(),date,ficha:ciF,feitas:s.ok,total:s.tot,nota:ciNota,obs,cargas,ciclo:S.ciclo.n};
+  if(S.sessao){ ci.inicio=S.sessao.inicio; ci.fim=Date.now(); ci.duracao=Math.round((ci.fim-ci.inicio)/60000); S.sessao=null; }
+  S.checkins.push(ci);
   S.done[ciF]={}; S.ficha=ciF==="A"?"B":"A"; save(); $("dlg").close(); toast("Check-in salvo");
-  renderTreino(); window.scrollTo(0,0); avisoCiclo();
+  renderTreino(); renderStart(); window.scrollTo(0,0); avisoCiclo();
 });
 function avisoCiclo(){
   const n=cicloCount();
@@ -456,7 +489,7 @@ function renderSemana(){
     const cs=groups[k], ok=cs.length>=S.meta;
     const card=el("div",{class:"card week"},`<h4><span>${per}</span><span class="${ok?"up":"muted"}">${cs.length} de ${S.meta}</span></h4>`);
     cs.forEach(c=>{
-      const r=el("div",{class:"ci"},`<div><span class="tag">${c.ficha}</span>${fmtD(c.date)} · ${c.feitas}/${c.total} séries · nota ${c.nota}${c.obs?`<div class="muted" style="font-size:14px">${esc(c.obs)}</div>`:""}</div>
+      const r=el("div",{class:"ci"},`<div><span class="tag">${c.ficha}</span>${fmtD(c.date)}${c.inicio?` · ${hm(c.inicio)} · ${c.duracao} min`:""} · ${c.feitas}/${c.total} séries · nota ${c.nota}${c.obs?`<div class="muted" style="font-size:14px">${esc(c.obs)}</div>`:""}</div>
         <div class="acts"><button class="btn">Editar</button><button class="btn danger">Excluir</button></div>`);
       const [be,bd]=r.querySelectorAll("button"); be.onclick=()=>editCheckin(c.id); bd.onclick=()=>delCheckin(c.id);
       card.appendChild(r);
@@ -471,12 +504,15 @@ function history(id){
 }
 let evoSel=null;
 function renderEvo(){
-  const all=[...new Set([...exIds("A"),...exIds("B")])];
+  const cur=[...new Set([...exIds("A"),...exIds("B")])];
+  const old=[...new Set(S.checkins.flatMap(c=>Object.keys(c.cargas||{})))].filter(id=>EX[id]&&!cur.includes(id));
+  const all=[...cur,...old];
   const withData=all.filter(id=>history(id).length);
   $("evoEmpty").hidden=withData.length>0; $("evoBody").hidden=!withData.length;
   if(!withData.length) return;
   const sel=$("exSel");
-  sel.innerHTML=["A","B"].map(f=>`<optgroup label="Ficha ${f}">${exIds(f).map(id=>`<option value="${id}">${esc(EX[id][0])}${history(id).length?"":" (sem registros)"}</option>`).join("")}</optgroup>`).join("");
+  sel.innerHTML=["A","B"].map(f=>`<optgroup label="Ficha ${f}">${exIds(f).map(id=>`<option value="${id}">${esc(EX[id][0])}${history(id).length?"":" (sem registros)"}</option>`).join("")}</optgroup>`).join("")
+    + (old.length?`<optgroup label="Exercícios anteriores">${old.map(id=>`<option value="${id}">${esc(EX[id][0])}</option>`).join("")}</optgroup>`:"");
   if(!evoSel||!history(evoSel).length) evoSel=withData[0];
   sel.value=evoSel; sel.onchange=()=>{evoSel=sel.value;renderDetail();};
   renderDetail();
@@ -537,7 +573,7 @@ $("fileIn").onchange=async e=>{
 // ================= TIMER =================
 let tEnd=0,tInt=null,actx=null;
 function startTimer(sec,label){
-  tEnd=Date.now()+sec*1000; $("tlabel").textContent=label?`Descanso · ${label.replace(/ \(.*\)$/,"")}`:"Descanso";
+  tEnd=Date.now()+sec*1000; $("tlabel").textContent=label||"Descanso";
   clearInterval(tInt); tick(); tInt=setInterval(tick,250);
   try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
 }
@@ -552,7 +588,7 @@ document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>startTimer(+b.dat
 $("stop").onclick=()=>{ clearInterval(tInt); tInt=null; $("clock").textContent="0:00"; $("clock").className="clock"; $("tlabel").textContent="Descanso"; };
 
 // ================= INÍCIO =================
-renderTreino();
+renderTreino(); renderStart();
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>
 </body>
