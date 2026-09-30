@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1C2126">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Treino Full Body A/B</title>
+<title>Treino do Pedro Teixeira</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -66,6 +66,12 @@ h2.sec{font:700 22px/1.2 "Barlow Condensed",sans-serif;margin:22px 0 8px}
 .load{display:flex;align-items:center;gap:6px;margin-left:auto}
 .load input{width:74px;padding:9px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);text-align:right}
 .load small{color:var(--muted);font-size:12px;display:block;text-align:right}
+.notes{margin-top:10px}
+.notes summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6px 0;list-style:none}
+.notes summary::-webkit-details-marker{display:none}
+.notes summary b{color:var(--ink);font-weight:600}
+.notes textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:15px;margin-top:4px;resize:vertical}
+.tbl .nt{display:block;color:var(--muted);font-size:13px;white-space:pre-line}
 .btn{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;font-size:15px;min-height:42px}
 .btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn.big{width:100%;padding:16px;font:800 22px/1 "Barlow Condensed",sans-serif;background:var(--ok);color:#fff;border-color:var(--ok);margin-top:16px}
@@ -89,6 +95,8 @@ h2.sec{font:700 22px/1.2 "Barlow Condensed",sans-serif;margin:22px 0 8px}
 .day b{display:block;font:800 22px/1.1 "Barlow Condensed",sans-serif;color:var(--ink);min-height:24px}
 .day.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .day.on b{color:var(--bg)}
+.day.empty{border:0}
+.mes .day{padding:4px 0}
 .day.today{outline:2px solid var(--p2);outline-offset:1px}
 .week h4{margin:0;font:700 19px/1.2 "Barlow Condensed",sans-serif;display:flex;justify-content:space-between}
 .ci{border-top:1px solid var(--line);padding:10px 0;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
@@ -127,7 +135,7 @@ details.tips li{margin:6px 0}
 </head>
 <body>
 <div class="wrap">
-  <h1>Treino Full Body</h1>
+  <h1>Treino do Pedro Teixeira</h1>
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="treino" aria-selected="true">Treino</button>
     <button role="tab" data-tab="semana" aria-selected="false">Semana</button>
@@ -173,6 +181,13 @@ details.tips li{margin:6px 0}
       <div class="days" id="days"></div>
       <p style="margin:10px 0 0" id="weekTxt"></p>
       <p class="muted" style="margin:2px 0 0" id="streakTxt"></p>
+    </div>
+    <div class="card" id="mesCard">
+      <div class="next"><button class="btn" id="mesPrev" aria-label="Mês anterior">‹</button><span class="cond" style="font-size:21px" id="mesTitulo"></span><button class="btn" id="mesNext" aria-label="Próximo mês">›</button></div>
+      <div class="days" id="mesDow"></div>
+      <div class="days" id="mesGrid" style="margin-top:6px"></div>
+      <p style="margin:10px 0 0" id="mesTxt"></p>
+      <table class="tbl" id="mesTbl"></table>
     </div>
     <div class="card" id="cicloCard"></div>
     <h2 class="sec">Histórico</h2>
@@ -251,13 +266,14 @@ const EX = {
   sumo:["Agachamento sumô com halter","XypoxVWr0zs"],
   pantsent:["Panturrilha sentado (máquina)","Nap62yku2ks"],
   encolh:["Encolhimento com halteres (em pé)","YeILDnoeYEk"],
-  frontal:["Elevação frontal com halteres","jhxLYSm_P-k"]
+  frontal:["Elevação frontal com halteres","jhxLYSm_P-k"],
+  inversa:["Rosca inversa com halteres (em pé)","pDGDCZiwrdo"]
 };
 const FICHAS = {
   A:[[["legpress","3","8–12",3],["infra","3","12–15",3]],[["puxada","3","8–12",3],["stiff","3","8–12",3]],
      [["supinoreto","3","8–12",3],["roscadireta","3","10–12",3]],[["desenv","3","8–12",3],["ponte","3","10–15",3]],
      [["tricorda","2–3","10–15",3],["lateral","2–3","10–15",3]],[["abdutora","2","12–15",2],["pantstep","2","12–15",2]]],
-  B:[[["hack","3","8–12",3],["martelo","3","10–12",3]],[["supinoinc","3","8–12",3],["remada","3","8–12",3]],
+  B:[[["hack","3","8–12",3],["inversa","3","10–12",3]],[["supinoinc","3","8–12",3],["remada","3","8–12",3]],
      [["flexora","3","10–12",3],["infra","3","12–15",3]],[["frances","2–3","10–15",3],["frontal","2–3","10–15",3]],
      [["facepull","3","12–15",3],["sumo","3","8–12",3]],[["pantsent","2","12–15",2],["encolh","2","10–12",2]]]
 };
@@ -269,7 +285,7 @@ const KEY = "treinoAB.v1";
 const hoje = () => { const d=new Date(); return iso(d); };
 function iso(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function parse(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
-function fresh(){ return {ficha:"A",done:{A:{},B:{}},loads:{},checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null}; }
+function fresh(){ return {ficha:"A",done:{A:{},B:{}},loads:{},checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null,notas:{}}; }
 let S;
 try{ S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){ S = fresh(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -324,6 +340,7 @@ function exBlock(id,s,r,n,i,j){
    <div class="row"><div class="dots"></div>
      <div class="load"><div><label style="display:flex;align-items:center;gap:6px"><input inputmode="decimal" aria-label="Carga em kg de ${esc(nome)}" placeholder="—" value="${esc(S.loads[id]??"")}"><span class="muted">kg</span></label>
      ${last!==null?`<small>último: ${kg(last)} kg</small>`:""}</div></div></div>
+   <details class="notes"><summary></summary><textarea rows="3" maxlength="500" aria-label="Anotações de ${esc(nome)}" placeholder="Ex.: 12, 10, 9 reps · banco no furo 4 · encosto inclinado 45°"></textarea></details>
    <div><button class="btn dark vbtn" style="margin-top:10px">▶ Ver execução</button></div>`;
   const dots=d.querySelector(".dots");
   for(let k=0;k<n;k++){
@@ -331,16 +348,22 @@ function exBlock(id,s,r,n,i,j){
     b.onclick=()=>{ const on=!S.done[S.ficha][key]; S.done[S.ficha][key]=on; b.setAttribute("aria-pressed",on); save(); updateProgress(); if(on && j===1) startTimer(i===5?40:50,`Superset ${i+1}`); };
     dots.appendChild(b);
   }
+  const nt=d.querySelector(".notes textarea"), ns=d.querySelector(".notes summary");
+  const paintNs=()=>{ const t=(S.notas[id]||"").trim(); ns.innerHTML=t?`📝 <b>${esc(t.split("\n")[0].slice(0,60))}</b>${t.length>60||t.includes("\n")?"…":""}`:"📝 Anotações (reps, ajustes do aparelho)"; };
+  nt.value=S.notas[id]||""; paintNs();
+  nt.addEventListener("input",()=>{ const v=nt.value; if(v.trim()) S.notas[id]=v; else delete S.notas[id]; save(); paintNs(); });
   const inp=d.querySelector("input");
   inp.addEventListener("change",()=>{ const v=inp.value.trim(); if(v) S.loads[id]=v; else delete S.loads[id]; save(); });
   const vb=d.querySelector(".vbtn");
   vb.onclick=()=>{
     const existing=d.querySelector(".player");
-    if(existing){ existing.remove(); vb.textContent="▶ Ver execução"; openPlayer=null; return; }
+    if(existing){ existing.parentNode.remove(); vb.textContent="▶ Ver execução"; openPlayer=null; return; }
     if(openPlayer){ openPlayer.p.remove(); openPlayer.b.textContent="▶ Ver execução"; }
     const p=el("div",{class:"player "+(vert?"v":"h")});
-    p.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${yt}?playsinline=1&rel=0&autoplay=1" title="${esc(nome)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
-    vb.parentNode.appendChild(p); vb.textContent="Fechar vídeo"; openPlayer={p,b:vb};
+    p.innerHTML=`<iframe src="https://www.youtube.com/embed/${yt}?playsinline=1&rel=0" title="${esc(nome)}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    const alt=el("a",{href:`https://www.youtube.com/watch?v=${yt}`,target:"_blank",rel:"noopener",class:"muted",style:"display:block;font-size:13px;margin-top:6px"},"Não carregou? Abrir no YouTube");
+    const wrapV=el("div"); wrapV.append(p,alt);
+    vb.parentNode.appendChild(wrapV); vb.textContent="Fechar vídeo"; openPlayer={p:wrapV,b:vb};
   };
   return d;
 }
@@ -427,8 +450,9 @@ $("ciForm").addEventListener("submit",e=>{
     renderTopo(); renderSemana(); return;
   }
   const s=seriesInfo(ciF), cargas={};
-  exIds(ciF).forEach(id=>{ const v=num(S.loads[id]); if(v!==null) cargas[id]=v; });
-  const ci={id:Date.now().toString(36),ts:Date.now(),date,ficha:ciF,feitas:s.ok,total:s.tot,nota:ciNota,obs,cargas,ciclo:S.ciclo.n};
+  const notas={};
+  exIds(ciF).forEach(id=>{ const v=num(S.loads[id]); if(v!==null) cargas[id]=v; const n=(S.notas[id]||"").trim(); if(n) notas[id]=n; });
+  const ci={id:Date.now().toString(36),ts:Date.now(),date,ficha:ciF,feitas:s.ok,total:s.tot,nota:ciNota,obs,cargas,notas,ciclo:S.ciclo.n};
   if(S.sessao){ ci.inicio=S.sessao.inicio; ci.fim=Date.now(); ci.duracao=Math.round((ci.fim-ci.inicio)/60000); S.sessao=null; }
   S.checkins.push(ci);
   S.done[ciF]={}; S.ficha=ciF==="A"?"B":"A"; save(); $("dlg").close(); toast("Check-in salvo");
@@ -464,6 +488,7 @@ function renderSemana(){
     days.appendChild(el("div",{class:"day"+(f?" on":"")+(s===hoje()?" today":"")},`${DIA[k]}<b>${f?f.join(""):""}</b>${d.getDate()}`));
   }
   $("weekTxt").innerHTML=`<b>${count} de ${S.meta}</b> treinos nesta semana`;
+  renderMes();
   // sequência
   const perWeek={}; S.checkins.forEach(c=>{ const k=weekKey(c.date); perWeek[k]=(perWeek[k]||0)+1; });
   let w=new Date(mon), streak=0;
@@ -498,9 +523,35 @@ function renderSemana(){
   });
 }
 
+// ================= MÊS =================
+const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+let mesRef=new Date(); mesRef.setDate(1);
+$("mesPrev").onclick=()=>{ mesRef.setMonth(mesRef.getMonth()-1); renderMes(); };
+$("mesNext").onclick=()=>{ mesRef.setMonth(mesRef.getMonth()+1); renderMes(); };
+function renderMes(){
+  const y=mesRef.getFullYear(), m=mesRef.getMonth();
+  $("mesTitulo").textContent=`${MESES[m][0].toUpperCase()+MESES[m].slice(1)} ${y}`;
+  $("mesDow").innerHTML=DIA.map(d=>`<div class="day empty" style="padding:0">${d}</div>`).join("");
+  const byDate={}; S.checkins.forEach(c=>(byDate[c.date]=byDate[c.date]||[]).push(c.ficha));
+  const g=$("mesGrid"); g.innerHTML=""; g.classList.add("mes");
+  const lead=(new Date(y,m,1).getDay()+6)%7, last=new Date(y,m+1,0).getDate();
+  for(let k=0;k<lead;k++) g.appendChild(el("div",{class:"day empty"}));
+  let tot=0,a=0,b=0;
+  for(let d=1; d<=last; d++){
+    const s=iso(new Date(y,m,d)), f=byDate[s]||[];
+    tot+=f.length; f.forEach(x=>x==="A"?a++:b++);
+    g.appendChild(el("div",{class:"day"+(f.length?" on":"")+(s===hoje()?" today":"")},`<b>${f.join("")}</b>${d}`));
+  }
+  $("mesTxt").innerHTML=`<b>${tot} ${tot===1?"treino":"treinos"}</b> em ${MESES[m]} · Ficha A: ${a} · Ficha B: ${b}`;
+  // totais dos últimos meses com treino
+  const porMes={}; S.checkins.forEach(c=>{ const k=c.date.slice(0,7); porMes[k]=(porMes[k]||0)+1; });
+  const ks=Object.keys(porMes).sort().reverse().slice(0,6);
+  $("mesTbl").innerHTML=ks.length?ks.map(k=>{ const [yy,mm]=k.split("-").map(Number); return `<tr><td>${MESES[mm-1][0].toUpperCase()+MESES[mm-1].slice(1)} ${yy}</td><td>${porMes[k]} ${porMes[k]===1?"treino":"treinos"}</td></tr>`; }).join(""):"";
+}
+
 // ================= EVOLUÇÃO =================
 function history(id){
-  return sorted().filter(c=>c.cargas&&num(c.cargas[id])!==null).map(c=>({date:c.date,v:num(c.cargas[id])}));
+  return sorted().filter(c=>c.cargas&&num(c.cargas[id])!==null).map(c=>({date:c.date,v:num(c.cargas[id]),n:(c.notas&&c.notas[id])||""}));
 }
 let evoSel=null;
 function renderEvo(){
@@ -537,7 +588,7 @@ function renderDetail(){
     <div class="stat"><span>Primeira carga</span><b>${kg(first)} kg</b></div>
     <div class="stat"><span>Evolução</span><b class="${cls}">${diff>0?"+":""}${kg(diff)} kg</b><span class="${cls}">${diff>0?"+":""}${kg(pct)}%</span></div></div>
     ${chart(h)}
-    <table class="tbl">${[...h].reverse().map(x=>`<tr><td>${fmtD(x.date)} ${parse(x.date).getFullYear()}</td><td>${kg(x.v)} kg</td></tr>`).join("")}</table>`;
+    <table class="tbl">${[...h].reverse().map(x=>`<tr><td>${fmtD(x.date)} ${parse(x.date).getFullYear()}${x.n?`<span class="nt">${esc(x.n)}</span>`:""}</td><td style="vertical-align:top">${kg(x.v)} kg</td></tr>`).join("")}</table>`;
 }
 function chart(h){
   const W=340,H=180,L=34,R=14,T=12,B=26;
