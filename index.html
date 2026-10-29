@@ -72,6 +72,15 @@ h2.sec{font:700 22px/1.2 "Barlow Condensed",sans-serif;margin:22px 0 8px}
 .notes summary b{color:var(--ink);font-weight:600}
 .notes textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:15px;margin-top:4px;resize:vertical}
 .tbl .nt{display:block;color:var(--muted);font-size:13px;white-space:pre-line}
+.dica{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.35}
+.sets{display:flex;gap:8px}
+.set{display:flex;flex-direction:column;align-items:center;gap:2px}
+.set span{font-size:11px;color:var(--muted)}
+.set input{width:50px;height:44px;text-align:center;border:2px solid var(--line);border-radius:10px;background:var(--bg);font:700 18px/1 "Barlow Condensed",sans-serif}
+.set input.ok{border-color:var(--ok);background:var(--ok);color:#fff}
+.alerta{margin-top:10px;padding:9px 11px;border-radius:9px;font-size:14px;font-weight:600;line-height:1.35}
+.alerta.up{background:var(--ok);color:#fff}
+.alerta.stall{background:var(--warn-bg);color:var(--warn-ink)}
 .btn{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;font-size:15px;min-height:42px}
 .btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn.big{width:100%;padding:16px;font:800 22px/1 "Barlow Condensed",sans-serif;background:var(--ok);color:#fff;border-color:var(--ok);margin-top:16px}
@@ -103,6 +112,7 @@ h2.sec{font:700 22px/1.2 "Barlow Condensed",sans-serif;margin:22px 0 8px}
 .ci:first-of-type{border-top:0}
 .ci .acts{display:flex;gap:6px}
 .ci .acts button{min-height:36px;padding:6px 10px}
+.tag.tt{background:var(--p2);color:#fff}
 .tag{display:inline-block;min-width:26px;text-align:center;border-radius:6px;background:var(--ink);color:var(--bg);font:800 16px/26px "Barlow Condensed",sans-serif;margin-right:6px}
 .evo-item{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;border-top:1px solid var(--line);padding:11px 0;cursor:pointer;text-align:left}
 .evo-item:first-of-type{border-top:0}
@@ -162,7 +172,7 @@ details.tips li{margin:6px 0}
       <ul>
         <li><b>Superset:</b> exercício a, descanso 45–60 s, exercício b, descanso, repete.</li>
         <li><b>Intensidade:</b> 0–2 repetições na reserva. Nos pesados (leg press, hack, supino), deixe 1–2.</li>
-        <li><b>Progressão:</b> bateu o topo da faixa em todas as séries, suba a carga.</li>
+        <li><b>Progressão:</b> anote as repetições de cada série. Bateu o topo da faixa em todas, o app avisa para subir a carga. Carga parada há 3 treinos, ele lembra de tentar subir.</li>
         <li><b>Leg press:</b> pés altos e afastados. Desça fundo sem o quadril descolar do banco.</li>
         <li><b>Stiff:</b> quadril para trás, coluna neutra, halteres rentes às coxas.</li>
         <li><b>Ponte:</b> toalha sob o halter, empurre com os calcanhares, segure 1 s em cima.</li>
@@ -267,9 +277,48 @@ const EX = {
   pantsent:["Panturrilha sentado (máquina)","Nap62yku2ks"],
   encolh:["Encolhimento com halteres (em pé)","YeILDnoeYEk"],
   frontal:["Elevação frontal com halteres","jhxLYSm_P-k"],
-  inversa:["Rosca inversa com halteres (em pé)","pDGDCZiwrdo"]
+  inversa:["Rosca inversa com halteres (em pé)","pDGDCZiwrdo"],
+  puxneutra:["Puxada com triângulo (pegada neutra)","Grst_PcwIZU"],
+  desenvhalt:["Desenvolvimento com halteres sentado","-BJk7LwgMqA"],
+  tribarra:["Tríceps na polia com barra","9cmeOVHOjck"]
 };
-const FICHAS = {
+const DICA = {
+  legpress:"Pés altos e afastados · joelhos na linha dos pés · não trave no final · com dor no joelho, não suba a carga",
+  crunch:"Lombar no chão · suba o tronco contraindo o abdômen · solte o ar na subida",
+  puxneutra:"Peito aberto · puxe até o alto do peito · cotovelos para baixo · suba devagar até alongar",
+  stiff:"Quadril para trás · coluna neutra · halteres rentes às coxas · desça até alongar o posterior",
+  supinoreto:"Escápulas juntas no banco · cotovelos a ~45° do tronco · desça até alongar o peito",
+  roscadireta:"Cotovelos colados ao corpo · sem balançar · desça até estender o braço",
+  desenvhalt:"Encosto quase reto · desça até a altura das orelhas · não arqueie a lombar",
+  ponte:"Toalha sob o halter · empurre com os calcanhares · segure 1 s em cima",
+  tribarra:"Cotovelos colados ao corpo · estenda tudo embaixo · volte devagar até ~90°",
+  lateral:"Tronco levemente à frente · suba até a linha do ombro · cotovelos levemente dobrados",
+  abdutora:"Tronco levemente à frente · abra até o máximo · volte devagar",
+  pantstep:"Desça até alongar bem · pause 1 s embaixo · suba o máximo na ponta",
+  hack:"Costas apoiadas · desça fundo controlando · joelhos na linha dos pés",
+  inversa:"Palmas para baixo · cotovelos fixos · sem balançar",
+  supinoinc:"Banco a 30–45° · escápulas juntas · desça até alongar o peito",
+  remada:"Peito apoiado · puxe os cotovelos para trás · aperte as escápulas · alongue embaixo",
+  flexora:"Joelho alinhado ao eixo da máquina · flexione até o máximo · volte devagar",
+  infra:"Lombar colada no chão · suba as pernas sem embalo · desça controlando",
+  frances:"Cotovelos apontando para cima · alongue bem atrás da cabeça · estenda tudo",
+  frontal:"Suba até a altura dos ombros · sem embalo · desça devagar",
+  facepull:"Polia na altura do rosto · puxe abrindo os cotovelos · gire os ombros para fora",
+  sumo:"Base bem afastada · pontas dos pés para fora · desça fundo com o tronco firme",
+  pantsent:"Desça até alongar · pause 1 s embaixo · suba o máximo",
+  encolh:"Braços estendidos · suba os ombros em direção às orelhas · segure 1 s",
+  puxada:"Peito aberto · puxe até o alto do peito · cotovelos para baixo · suba devagar até alongar",
+  desenv:"Costas apoiadas · desça até a altura das orelhas · não trave os cotovelos em cima",
+  tricorda:"Cotovelos colados ao corpo · abra a corda no final · volte devagar até ~90°"
+};
+// quanto subir quando for hora (kg)
+const STEP = {legpress:10,puxneutra:5,stiff:2,supinoreto:2,roscadireta:2,desenvhalt:2,ponte:2,tribarra:2.5,lateral:1,abdutora:5,pantstep:2,
+  hack:5,inversa:1,supinoinc:2,remada:2,flexora:5,frances:2.5,frontal:1,facepull:2.5,sumo:2.5,pantsent:5,encolh:2};
+// cargas sugeridas para o início do Ciclo 2
+const SUGESTAO_C2 = {legpress:"80",puxneutra:"40",stiff:"20",supinoreto:"20",roscadireta:"10",desenvhalt:"12",ponte:"20",tribarra:"17.5",lateral:"8",abdutora:"45",pantstep:"15",
+  hack:"40",inversa:"9",supinoinc:"20",remada:"12",flexora:"80",frances:"12.5",frontal:"8",facepull:"17.5",sumo:"22.5",pantsent:"50",encolh:"12"};
+// Ficha do Ciclo 1 (T1), mantida até completar 15 treinos
+const FICHAS_C1 = {
   A:[[["legpress","3","8–12",3],["infra","3","12–15",3]],[["puxada","3","8–12",3],["stiff","3","8–12",3]],
      [["supinoreto","3","8–12",3],["roscadireta","3","10–12",3]],[["desenv","3","8–12",3],["ponte","3","10–15",3]],
      [["tricorda","2–3","10–15",3],["lateral","2–3","10–15",3]],[["abdutora","2","12–15",2],["pantstep","2","12–15",2]]],
@@ -277,6 +326,16 @@ const FICHAS = {
      [["flexora","3","10–12",3],["infra","3","12–15",3]],[["frances","2–3","10–15",3],["frontal","2–3","10–15",3]],
      [["facepull","3","12–15",3],["sumo","3","8–12",3]],[["pantsent","2","12–15",2],["encolh","2","10–12",2]]]
 };
+// Ficha do Ciclo 2 (T2)
+const FICHAS_C2 = {
+  A:[[["legpress","3","8–12",3],["crunch","3","12–15",3]],[["puxneutra","3","8–12",3],["stiff","3","8–12",3]],
+     [["supinoreto","3","8–12",3],["roscadireta","3","10–12",3]],[["desenvhalt","3","8–12",3],["ponte","3","10–15",3]],
+     [["tribarra","3","10–12",3],["lateral","3","10–15",3]],[["abdutora","3","12–15",3],["pantstep","3","12–15",3]]],
+  B:[[["hack","3","8–12",3],["inversa","3","10–12",3]],[["supinoinc","3","8–12",3],["remada","3","8–12",3]],
+     [["flexora","3","10–12",3],["infra","3","12–15",3]],[["frances","3","10–12",3],["frontal","3","10–12",3]],
+     [["facepull","3","12–15",3],["sumo","3","8–12",3]],[["pantsent","3","12–15",3],["encolh","3","10–12",3]]]
+};
+let FICHAS = FICHAS_C2;
 const CICLO_MAX = 15, CICLO_AVISO = 13;
 const exIds = f => FICHAS[f].flat().map(x=>x[0]);
 
@@ -285,9 +344,28 @@ const KEY = "treinoAB.v1";
 const hoje = () => { const d=new Date(); return iso(d); };
 function iso(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function parse(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
-function fresh(){ return {ficha:"A",done:{A:{},B:{}},loads:{},checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null,notas:{}}; }
+function fresh(){ return {v:2,ficha:"A",done:{A:{},B:{}},reps:{A:{},B:{}},loads:Object.assign({},SUGESTAO_C2),checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null,notas:{}}; }
+// Passagem para o Ciclo 2 (fichas novas). Não apaga nenhum check-in, carga ou anotação antiga.
+function migrar(){
+  if(S.v>=2) return;
+  const n1=S.checkins.filter(c=>c.ciclo===S.ciclo.n).length;
+  if(n1){ S.ciclos.push({n:S.ciclo.n,inicio:S.ciclo.inicio,fim:hoje(),total:n1}); S.ciclo={n:S.ciclo.n+1,inicio:hoje()}; }
+  Object.assign(S.loads, SUGESTAO_C2);
+  const nt=S.notas||{}; S.notasCiclo1=nt;
+  S.notas={frances:"Furo 13", facepull:"Furo 8", hack:"Carga anotada = por lado (2 anilhas de 20 de cada lado)"};
+  S.done={A:{},B:{}}; S.reps={A:{},B:{}};
+  S.ficha="A"; S.v=2; FICHAS=FICHAS_C2;
+}
 let S;
-try{ S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){ S = fresh(); }
+try{
+  const raw=JSON.parse(localStorage.getItem(KEY)||"null");
+  S = Object.assign(fresh(), raw||{});
+  if(raw && !raw.v) S.v=1;
+  S.reps=S.reps||{A:{},B:{}};
+  FICHAS = S.v>=2 ? FICHAS_C2 : FICHAS_C1;
+  if(S.v<2 && S.checkins.filter(c=>c.ciclo===S.ciclo.n).length>=CICLO_MAX) migrar();
+  localStorage.setItem(KEY, JSON.stringify(S));
+}catch(e){ S = fresh(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 
 // ================= UTIL =================
@@ -337,23 +415,39 @@ function exBlock(id,s,r,n,i,j){
   const [nome,yt,vert]=EX[id], d=el("div",{class:"ex"});
   const last=lastLoad(id);
   d.innerHTML=`<div class="ex-head"><h4 class="ex-name">${i+1}${j?"b":"a"}. ${esc(nome)}</h4><span class="ex-sets">${s} × ${r}</span></div>
-   <div class="row"><div class="dots"></div>
+   ${DICA[id]?`<div class="dica">💡 ${esc(DICA[id])}</div>`:""}
+   <div class="alertbox"></div>
+   <div class="row"><div class="sets"></div>
      <div class="load"><div><label style="display:flex;align-items:center;gap:6px"><input inputmode="decimal" aria-label="Carga em kg de ${esc(nome)}" placeholder="—" value="${esc(S.loads[id]??"")}"><span class="muted">kg</span></label>
      ${last!==null?`<small>último: ${kg(last)} kg</small>`:""}</div></div></div>
-   <details class="notes"><summary></summary><textarea rows="3" maxlength="500" aria-label="Anotações de ${esc(nome)}" placeholder="Ex.: 12, 10, 9 reps · banco no furo 4 · encosto inclinado 45°"></textarea></details>
+   <details class="notes"><summary></summary><textarea rows="3" maxlength="500" aria-label="Anotações de ${esc(nome)}" placeholder="Ex.: banco no furo 4 · encosto a 45° · senti o joelho"></textarea></details>
    <div><button class="btn dark vbtn" style="margin-top:10px">▶ Ver execução</button></div>`;
-  const dots=d.querySelector(".dots");
+  const sets=d.querySelector(".sets"), F=S.ficha;
+  S.reps[F]=S.reps[F]||{};
+  const paintAlert=()=>{
+    const a=alertaPara(id,r,n,i,j), box=d.querySelector(".alertbox");
+    box.innerHTML=a?`<div class="alerta ${a.t}">${a.m}</div>`:"";
+  };
   for(let k=0;k<n;k++){
-    const key=`${i}${j}-${k}`, b=el("button",{class:"dot","aria-label":`Série ${k+1} de ${nome}`,"aria-pressed":!!S.done[S.ficha][key]},String(k+1));
-    b.onclick=()=>{ const on=!S.done[S.ficha][key]; S.done[S.ficha][key]=on; b.setAttribute("aria-pressed",on); save(); updateProgress(); if(on && j===1) startTimer(i===5?40:50,`Superset ${i+1}`); };
-    dots.appendChild(b);
+    const key=`${i}${j}-${k}`, wrap=el("label",{class:"set"});
+    wrap.innerHTML=`<span>Série ${k+1}</span><input type="number" inputmode="numeric" min="0" max="99" placeholder="–" aria-label="Repetições da série ${k+1} de ${esc(nome)}">`;
+    const ri=wrap.querySelector("input"); const v=S.reps[F][key];
+    if(v){ ri.value=v; ri.classList.add("ok"); }
+    ri.addEventListener("change",()=>{
+      const was=!!S.done[F][key], val=ri.value.trim();
+      if(val){ S.reps[F][key]=val; S.done[F][key]=true; } else { delete S.reps[F][key]; delete S.done[F][key]; }
+      ri.classList.toggle("ok",!!val); save(); updateProgress(); paintAlert();
+      if(val && !was && j===1) startTimer(i===5?40:50,`Superset ${i+1}`);
+    });
+    sets.appendChild(wrap);
   }
+  paintAlert();
   const nt=d.querySelector(".notes textarea"), ns=d.querySelector(".notes summary");
   const paintNs=()=>{ const t=(S.notas[id]||"").trim(); ns.innerHTML=t?`📝 <b>${esc(t.split("\n")[0].slice(0,60))}</b>${t.length>60||t.includes("\n")?"…":""}`:"📝 Anotações (reps, ajustes do aparelho)"; };
   nt.value=S.notas[id]||""; paintNs();
   nt.addEventListener("input",()=>{ const v=nt.value; if(v.trim()) S.notas[id]=v; else delete S.notas[id]; save(); paintNs(); });
-  const inp=d.querySelector("input");
-  inp.addEventListener("change",()=>{ const v=inp.value.trim(); if(v) S.loads[id]=v; else delete S.loads[id]; save(); });
+  const inp=d.querySelector(".load input");
+  inp.addEventListener("change",()=>{ const v=inp.value.trim(); if(v) S.loads[id]=v; else delete S.loads[id]; save(); paintAlert(); });
   const vb=d.querySelector(".vbtn");
   vb.onclick=()=>{
     const existing=d.querySelector(".player");
@@ -367,6 +461,29 @@ function exBlock(id,s,r,n,i,j){
   };
   return d;
 }
+function topo(r){ return parseInt(String(r).split("–").pop(),10); }
+function exHist(id){
+  return sorted().filter(c=>c.cargas&&num(c.cargas[id])!==null)
+    .map(c=>({date:c.date,v:num(c.cargas[id]),r:(c.reps&&c.reps[id])||null,n:(c.notas&&c.notas[id])||""}));
+}
+function alertaPara(id,r,n,i,j){
+  const step=STEP[id]; if(!step) return null;
+  const alvo=topo(r), cur=num(S.loads[id]), joelho=id==="legpress"?" Só se o joelho estiver sem dor.":"";
+  // 1) no treino de hoje: fechou todas as séries no topo da faixa
+  const hojeR=[]; for(let k=0;k<n;k++) hojeR.push(num((S.reps[S.ficha]||{})[`${i}${j}-${k}`]));
+  if(cur!==null && hojeR.every(x=>x!==null && x>=alvo))
+    return {t:"up",m:`✅ ${n}×${alvo} feito hoje com ${kg(cur)} kg! No próximo treino, suba para ${kg(cur+step)} kg.${joelho}`};
+  const h=exHist(id); if(!h.length) return null;
+  const last=h[h.length-1];
+  if(cur!==null && cur>last.v) return null; // já subiu a carga
+  // 2) último treino fechou no topo da faixa
+  if(last.r && last.r.length>=n && last.r.slice(0,n).every(x=>num(x)!==null && num(x)>=alvo))
+    return {t:"up",m:`✅ Você fechou ${n}×${alvo} com ${kg(last.v)} kg. Suba para ${kg(last.v+step)} kg.${joelho}`};
+  // 3) carga parada há 3 treinos ou mais
+  let c=0; for(let k=h.length-1;k>=0 && h[k].v===last.v;k--) c++;
+  if(c>=3) return {t:"stall",m:`⚠️ Há ${c} treinos com ${kg(last.v)} kg. Tente ${kg(last.v+step)} kg e registre quantas repetições fez em cada série.${joelho}`};
+  return null;
+}
 function seriesInfo(f){
   let tot=0,ok=0;
   FICHAS[f].forEach((p,i)=>p.forEach((x,j)=>{ for(let k=0;k<x[3];k++){ tot++; if(S.done[f][`${i}${j}-${k}`]) ok++; } }));
@@ -377,7 +494,7 @@ function renderTopo(){
   const cs=sorted(); const last=cs[cs.length-1];
   $("nextFicha").textContent = "Ficha " + (last ? (last.ficha==="A"?"B":"A") : "A");
   const n=cicloCount();
-  $("cicloTxt").textContent=`Ciclo ${S.ciclo.n}: ${n} de ${CICLO_MAX} treinos`;
+  $("cicloTxt").textContent=`Treino ${S.ciclo.n} (T${S.ciclo.n}): ${n} de ${CICLO_MAX} sessões`;
   $("cicloBar").classList.toggle("over", n>CICLO_MAX);
   $("cicloBar").querySelector("i").style.width=Math.min(100,n/CICLO_MAX*100)+"%";
   [$("cicloBanner"),$("cicloBanner2")].forEach(renderBanner);
@@ -398,7 +515,7 @@ function novoCiclo(){
   S.ciclo={n:S.ciclo.n+1,inicio:hoje()}; save(); renderTopo(); if(!$("tab-semana").hidden) renderSemana(); toast("Novo ciclo iniciado");
 }
 document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ S.ficha=b.dataset.f; save(); renderTreino(); });
-$("reset").onclick=()=>{ if(confirm("Zerar as séries marcadas desta ficha?")){ S.done[S.ficha]={}; save(); renderTreino(); } };
+$("reset").onclick=()=>{ if(confirm("Zerar as séries marcadas desta ficha?")){ S.done[S.ficha]={}; S.reps[S.ficha]={}; save(); renderTreino(); } };
 
 // ================= INÍCIO DO TREINO =================
 const hm = ts => { const d=new Date(ts); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
@@ -450,12 +567,19 @@ $("ciForm").addEventListener("submit",e=>{
     renderTopo(); renderSemana(); return;
   }
   const s=seriesInfo(ciF), cargas={};
-  const notas={};
+  const notas={}, reps={};
   exIds(ciF).forEach(id=>{ const v=num(S.loads[id]); if(v!==null) cargas[id]=v; const n=(S.notas[id]||"").trim(); if(n) notas[id]=n; });
-  const ci={id:Date.now().toString(36),ts:Date.now(),date,ficha:ciF,feitas:s.ok,total:s.tot,nota:ciNota,obs,cargas,notas,ciclo:S.ciclo.n};
+  FICHAS[ciF].forEach((p,i)=>p.forEach(([id,,,n],j)=>{ const arr=[]; for(let k=0;k<n;k++){ const x=(S.reps[ciF]||{})[`${i}${j}-${k}`]; arr.push(x?num(x):null); } if(arr.some(x=>x!==null)) reps[id]=arr; }));
+  const ci={id:Date.now().toString(36),ts:Date.now(),date,ficha:ciF,feitas:s.ok,total:s.tot,nota:ciNota,obs,cargas,notas,reps,ciclo:S.ciclo.n};
   if(S.sessao){ ci.inicio=S.sessao.inicio; ci.fim=Date.now(); ci.duracao=Math.round((ci.fim-ci.inicio)/60000); S.sessao=null; }
   S.checkins.push(ci);
-  S.done[ciF]={}; S.ficha=ciF==="A"?"B":"A"; save(); $("dlg").close(); toast("Check-in salvo");
+  S.done[ciF]={}; S.reps[ciF]={}; S.ficha=ciF==="A"?"B":"A"; save(); $("dlg").close(); toast("Check-in salvo");
+  if(S.v<2 && cicloCount()>=CICLO_MAX){
+    migrar(); save(); renderTreino(); renderStart(); window.scrollTo(0,0);
+    notificar("Treino 1 concluído!","As fichas do Treino 2 já estão liberadas.");
+    alert("Treino 1 concluído! 🎉\nAs fichas do Treino 2 já estão liberadas, com as cargas sugeridas.");
+    return;
+  }
   renderTreino(); renderStart(); window.scrollTo(0,0); avisoCiclo();
 });
 function avisoCiclo(){
@@ -497,9 +621,9 @@ function renderSemana(){
   $("streakTxt").textContent = streak ? `${streak} ${streak===1?"semana":"semanas seguidas"} batendo a meta` : "Nenhuma semana completa na meta ainda";
   // ciclo
   const n=cicloCount();
-  let ch=`<div class="next"><span class="cond" style="font-size:20px">Ciclo ${S.ciclo.n}</span><span class="muted">desde ${fmtD(S.ciclo.inicio)}</span></div>
+  let ch=`<div class="next"><span class="cond" style="font-size:20px">Treino ${S.ciclo.n} (T${S.ciclo.n})</span><span class="muted">desde ${fmtD(S.ciclo.inicio)}</span></div>
     <div class="muted" style="margin-top:6px">${n} de ${CICLO_MAX} treinos</div><div class="bar${n>CICLO_MAX?" over":""}"><i style="width:${Math.min(100,n/CICLO_MAX*100)}%"></i></div>`;
-  if(S.ciclos.length) ch+=`<table class="tbl">${[...S.ciclos].reverse().map(c=>`<tr><td>Ciclo ${c.n} · ${fmtD(c.inicio)} a ${fmtD(c.fim)}</td><td>${c.total} treinos</td></tr>`).join("")}</table>`;
+  if(S.ciclos.length) ch+=`<table class="tbl">${[...S.ciclos].reverse().map(c=>`<tr><td>T${c.n} · ${fmtD(c.inicio)} a ${fmtD(c.fim)}</td><td>${c.total} treinos</td></tr>`).join("")}</table>`;
   if(n>=CICLO_MAX) ch+=`<button class="btn dark" style="margin-top:10px" id="novoCicloBtn">Iniciar novo ciclo</button>`;
   $("cicloCard").innerHTML=ch; const nb=$("novoCicloBtn"); if(nb) nb.onclick=novoCiclo;
   renderBanner($("cicloBanner2"));
@@ -514,7 +638,7 @@ function renderSemana(){
     const cs=groups[k], ok=cs.length>=S.meta;
     const card=el("div",{class:"card week"},`<h4><span>${per}</span><span class="${ok?"up":"muted"}">${cs.length} de ${S.meta}</span></h4>`);
     cs.forEach(c=>{
-      const r=el("div",{class:"ci"},`<div><span class="tag">${c.ficha}</span>${fmtD(c.date)}${c.inicio?` · ${hm(c.inicio)} · ${c.duracao} min`:""} · ${c.feitas}/${c.total} séries · nota ${c.nota}${c.obs?`<div class="muted" style="font-size:14px">${esc(c.obs)}</div>`:""}</div>
+      const r=el("div",{class:"ci"},`<div><span class="tag">${c.ficha}</span><span class="tag tt">T${c.ciclo||1}</span>${fmtD(c.date)}${c.inicio?` · ${hm(c.inicio)} · ${c.duracao} min`:""} · ${c.feitas}/${c.total} séries · nota ${c.nota}${c.obs?`<div class="muted" style="font-size:14px">${esc(c.obs)}</div>`:""}</div>
         <div class="acts"><button class="btn">Editar</button><button class="btn danger">Excluir</button></div>`);
       const [be,bd]=r.querySelectorAll("button"); be.onclick=()=>editCheckin(c.id); bd.onclick=()=>delCheckin(c.id);
       card.appendChild(r);
@@ -551,7 +675,7 @@ function renderMes(){
 
 // ================= EVOLUÇÃO =================
 function history(id){
-  return sorted().filter(c=>c.cargas&&num(c.cargas[id])!==null).map(c=>({date:c.date,v:num(c.cargas[id]),n:(c.notas&&c.notas[id])||""}));
+  return sorted().filter(c=>c.cargas&&num(c.cargas[id])!==null).map(c=>({date:c.date,v:num(c.cargas[id]),n:(c.notas&&c.notas[id])||"",r:(c.reps&&c.reps[id])||null,t:c.ciclo||1}));
 }
 let evoSel=null;
 function renderEvo(){
@@ -588,7 +712,7 @@ function renderDetail(){
     <div class="stat"><span>Primeira carga</span><b>${kg(first)} kg</b></div>
     <div class="stat"><span>Evolução</span><b class="${cls}">${diff>0?"+":""}${kg(diff)} kg</b><span class="${cls}">${diff>0?"+":""}${kg(pct)}%</span></div></div>
     ${chart(h)}
-    <table class="tbl">${[...h].reverse().map(x=>`<tr><td>${fmtD(x.date)} ${parse(x.date).getFullYear()}${x.n?`<span class="nt">${esc(x.n)}</span>`:""}</td><td style="vertical-align:top">${kg(x.v)} kg</td></tr>`).join("")}</table>`;
+    <table class="tbl">${[...h].reverse().map(x=>`<tr><td><span class="tag tt" style="font-size:13px;line-height:20px;min-width:22px">T${x.t}</span>${fmtD(x.date)} ${parse(x.date).getFullYear()}${x.r?`<span class="nt">${x.r.map(v=>v??"–").join(" · ")} reps</span>`:""}${x.n?`<span class="nt">${esc(x.n)}</span>`:""}</td><td style="vertical-align:top">${kg(x.v)} kg</td></tr>`).join("")}</table>`;
 }
 function chart(h){
   const W=340,H=180,L=34,R=14,T=12,B=26;
@@ -617,7 +741,7 @@ $("fileIn").onchange=async e=>{
     const j=JSON.parse(await f.text()); const d=j.dados||j;
     if(!Array.isArray(d.checkins)) throw 0;
     if(!confirm("Importar este backup? Os dados atuais deste aparelho serão substituídos.")) return;
-    S=Object.assign(fresh(),d); save(); renderTreino(); renderSemana(); toast("Backup importado");
+    S=Object.assign(fresh(),d); if(!d.v) S.v=1; S.reps=S.reps||{A:{},B:{}}; FICHAS = S.v>=2 ? FICHAS_C2 : FICHAS_C1; if(S.v<2 && S.checkins.filter(c=>c.ciclo===S.ciclo.n).length>=CICLO_MAX) migrar(); save(); renderTreino(); renderSemana(); toast("Backup importado");
   }catch(err){ alert("Esse arquivo não é um backup válido do app."); }
 };
 
