@@ -287,7 +287,9 @@ const EX = {
   hipthrust:["Elevação pélvica na máquina","DnHjZpt76NU"],
   smith:["Agachamento no Smith","uCT5wfQIQpk"],
   supincbarra:["Supino inclinado com barra","TIMRYQKVvDk"],
-  franceshalt:["Tríceps francês com halter, sentado","xl8e7FtyaKg"]
+  franceshalt:["Tríceps francês com halter, sentado","xl8e7FtyaKg"],
+  voador:["Voador (peck deck)","w33eOQri7Jc"],
+  roscainc:["Rosca com halteres no banco inclinado","IoxqjVqb9Cg"]
 };
 const DICA = {
   legpress:"Pés altos e afastados · joelhos na linha dos pés · não trave no final · com dor no joelho, não suba a carga",
@@ -301,7 +303,7 @@ const DICA = {
   tribarra:"Cotovelos colados ao corpo · estenda tudo embaixo · volte devagar até ~90°",
   lateral:"Tronco levemente à frente · suba até a linha do ombro · cotovelos levemente dobrados",
   abdutora:"Tronco levemente à frente · abra até o máximo · volte devagar",
-  pantstep:"Desça até alongar bem · pause 1 s embaixo · suba o máximo na ponta",
+  pantstep:"Desça até alongar bem · pause embaixo · suba o máximo na ponta · carga máxima 20 kg: depois disso, aumente a pausa",
   hack:"Costas apoiadas · desça fundo controlando · joelhos na linha dos pés",
   inversa:"Palmas para baixo · cotovelos fixos · sem balançar",
   supinoinc:"Banco a 30–45° · escápulas juntas · desça até alongar o peito",
@@ -321,7 +323,9 @@ const DICA = {
   hipthrust:"Costas no encosto · pés na largura do quadril · empurre com os calcanhares · segure 1 s em cima · sem arquear a lombar",
   smith:"Pés um pouco à frente da barra · desça fundo controlando · joelhos na linha dos pés · anote só o total de anilhas",
   supincbarra:"Use as travas de segurança · banco a 30–45° · desça a barra até o alto do peito · deixe 1–2 reps na reserva",
-  franceshalt:"Mesmo banco da remada, encosto reto · halter com as duas mãos · alongue bem atrás da cabeça · estenda tudo"
+  franceshalt:"Mesmo banco da remada, encosto reto · halter com as duas mãos · alongue bem atrás da cabeça · estenda tudo",
+  voador:"Cotovelos levemente dobrados · abra até sentir o peito alongar · junte à frente apertando o peito · volte devagar",
+  roscainc:"Mesmo banco do supino, barra travada no suporte · braços pendurados atrás da linha do corpo · cotovelos fixos · desça até estender"
 };
 // técnicas (só na última série ou em todas as repetições, conforme o tipo)
 const TEC = {
@@ -336,12 +340,12 @@ const TEC_TXT = {
 // tipo de carga: anilha (+2 kg de cada lado), halter (próximo halter) ou pino (próximo peso da máquina)
 const TIPO = {legpress:"anilha",smith:"anilha",supincbarra:"anilha",stiffbarra:"anilha",pantsent:"anilha",hack:"anilha",
   stiff:"halter",supinoreto:"halter",roscadireta:"halter",desenvhalt:"halter",ponte:"halter",lateral:"halter",pantstep:"halter",
-  inversa:"halter",supinoinc:"halter",remada:"halter",frontal:"halter",sumo:"halter",encolh:"halter",franceshalt:"halter",
+  inversa:"halter",supinoinc:"halter",remada:"halter",frontal:"halter",sumo:"halter",encolh:"halter",franceshalt:"halter",roscainc:"halter",voador:"pino",
   puxneutra:"pino",tribarra:"pino",abdutora:"pino",flexora:"pino",facepull:"pino",frances:"pino",hipthrust:"pino",puxada:"pino",desenv:"pino",tricorda:"pino"};
 function proxima(id,v){
   const t=TIPO[id];
   if(t==="anilha") return `${kg(v+4)} kg (+2 kg de cada lado)`;
-  if(t==="halter") return `${kg(v+(v<10?1:2))} kg (próximo halter)`;
+  if(t==="halter"){ const nx=HALTERES.find(x=>x>v); return nx?`${kg(nx)} kg (próximo halter)`:"o próximo halter disponível"; }
   return "o próximo peso da máquina";
 }
 // (antigo) quanto subir quando for hora (kg)
@@ -350,7 +354,10 @@ const STEP = {legpress:10,puxneutra:5,stiff:2,supinoreto:2,roscadireta:2,desenvh
 // cargas sugeridas para o início do Ciclo 2
 const SUGESTAO_C2 = {legpress:"80",puxneutra:"40",stiff:"20",supinoreto:"20",roscadireta:"10",desenvhalt:"12",ponte:"20",tribarra:"17.5",lateral:"8",abdutora:"45",pantstep:"15",
   hack:"40",inversa:"9",supinoinc:"20",remada:"12",flexora:"80",frances:"12.5",frontal:"8",facepull:"17.5",sumo:"22.5",pantsent:"50",encolh:"12",
-  stiffbarra:"40",smith:"30",supincbarra:"40",franceshalt:"12"};
+  stiffbarra:"40",smith:"30",supincbarra:"40",franceshalt:"12",roscainc:"9"};
+// carga máxima possível em alguns exercícios (depois disso, progride pela pausa)
+const MAXCARGA = {pantstep:20};
+const HALTERES = [1,2,3,4,5,6,7,8,9,10,12.5,15,17.5,20,22.5,25,27.5,30];
 // Ficha do Ciclo 1 (T1), mantida até completar 15 treinos
 const FICHAS_C1 = {
   A:[[["legpress","3","8–12",3],["infra","3","12–15",3]],[["puxada","3","8–12",3],["stiff","3","8–12",3]],
@@ -363,9 +370,9 @@ const FICHAS_C1 = {
 // Ficha do Ciclo 2 (T2)
 const FICHAS_C2 = {
   A:[[["legpress","3","8–12",3],["crunch","3","12–15",3]],[["puxneutra","3","8–12",3],["lateral","3","10–15",3]],
-     [["supinoreto","3","8–12",3],["stiffbarra","3","8–12",3]],[["desenvhalt","3","8–12",3],["hipthrust","3","10–12",3]],
-     [["tribarra","3","10–12",3],["roscadireta","3","10–12",3]],[["abdutora","3","12–15",3],["pantstep","3","12–15",3]]],
-  B:[[["smith","3","8–12",3],["frontal","3","10–12",3]],[["supincbarra","3","8–12",3],["inversa","3","10–12",3]],
+     [["supinoreto","3","8–12",3],["stiffbarra","3","8–12",3]],[["desenvhalt","3","8–12",3],["voador","3","10–12",3]],
+     [["tribarra","3","10–12",3],["roscadireta","3","10–12",3]],[["abdutora","3","12–15",3],["pantstep","3","15–20",3]]],
+  B:[[["smith","3","8–12",3],["frontal","3","10–12",3]],[["supincbarra","3","8–12",3],["roscainc","3","10–12",3]],
      [["flexora","3","10–12",3],["infra","3","12–15",3]],[["remada","3","8–12",3],["franceshalt","3","10–12",3]],
      [["facepull","3","12–15",3],["sumo","3","8–12",3]],[["pantsent","3","12–15",3],["encolh","3","10–12",3]]]
 };
@@ -378,7 +385,7 @@ const KEY = "treinoAB.v1";
 const hoje = () => { const d=new Date(); return iso(d); };
 function iso(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function parse(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
-function fresh(){ return {v:3,ficha:"A",done:{A:{},B:{}},reps:{A:{},B:{}},loads:Object.assign({},SUGESTAO_C2),checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null,notas:{}}; }
+function fresh(){ return {v:4,ficha:"A",done:{A:{},B:{}},reps:{A:{},B:{}},loads:Object.assign({},SUGESTAO_C2),checkins:[],meta:4,ciclo:{n:1,inicio:hoje()},ciclos:[],avisos:{},sessao:null,notas:{}}; }
 // Passagem para o Ciclo 2 (fichas novas). Não apaga nenhum check-in, carga ou anotação antiga.
 function migrar(){
   if(S.v>=2) return;
@@ -388,7 +395,13 @@ function migrar(){
   const nt=S.notas||{}; S.notasCiclo1=nt;
   S.notas={facepull:"Furo 8"};
   S.done={A:{},B:{}}; S.reps={A:{},B:{}};
-  S.ficha="A"; S.v=3; FICHAS=FICHAS_C2;
+  S.ficha="A"; S.v=4; FICHAS=FICHAS_C2;
+}
+// versão 3 -> 4: voador, rosca inclinada (9 kg) e panturrilha 15–20
+function atualizar34(){
+  if(S.v!==3) return;
+  if(S.loads.roscainc==null || S.loads.roscainc==="") S.loads.roscainc="9";
+  S.v=4;
 }
 // quem já tinha passado para o T2 na versão anterior: só completa o que falta
 function atualizar23(){
@@ -404,7 +417,7 @@ try{
   if(raw && !raw.v) S.v=1;
   S.reps=S.reps||{A:{},B:{}};
   FICHAS = S.v>=2 ? FICHAS_C2 : FICHAS_C1;
-  atualizar23();
+  atualizar23(); atualizar34();
   if(S.v<2 && S.checkins.filter(c=>c.ciclo===S.ciclo.n).length>=CICLO_MAX) migrar();
   localStorage.setItem(KEY, JSON.stringify(S));
 }catch(e){ S = fresh(); }
@@ -520,6 +533,7 @@ function alertaPara(id,r,n,i,j){
   const hojeR=[]; for(let k=0;k<n;k++) hojeR.push((S.reps[S.ficha]||{})[`${i}${j}-${k}`]);
   if(cur!==null && cheio(hojeR)){
     const vezes = last && last.v===cur ? c+1 : 1;
+    if(MAXCARGA[id] && cur>=MAXCARGA[id]) return {t:"up",m:`✅ ${n}×${alvo} com a carga máxima (${kg(cur)} kg)! Para progredir, aumente a pausa embaixo para 3 s.`};
     if(vezes>=2) return {t:"up",m:`✅ ${n}×${alvo} com ${kg(cur)} kg pelo ${vezes}º treino! No próximo, suba para ${proxima(id,cur)}.${joelho}`};
     return {t:"info",m:`👍 ${n}×${alvo} com ${kg(cur)} kg! Repita essa carga no próximo treino. Fechando de novo, aí sobe.`};
   }
@@ -527,13 +541,15 @@ function alertaPara(id,r,n,i,j){
   if(cur!==null && cur>last.v) return null; // já subiu a carga
   // 2) último treino: séries completas no topo da faixa
   if(cheio(last.r)){
+    if(MAXCARGA[id] && last.v>=MAXCARGA[id]) return {t:"up",m:`✅ Você fechou ${n}×${alvo} com a carga máxima (${kg(last.v)} kg). Aumente a pausa embaixo para 3 s.`};
     if(c>=2) return {t:"up",m:`✅ Você fechou ${n}×${alvo} com ${kg(last.v)} kg em ${c} treinos seguidos. Suba para ${proxima(id,last.v)}.${joelho}`};
     return {t:"info",m:`👍 Você fechou ${n}×${alvo} com ${kg(last.v)} kg. Mantenha essa carga hoje; fechando de novo, o app sugere subir.`};
   }
   // 3) carga parada há 3 treinos ou mais
   if(c>=3){
     if(!last.r) return {t:"stall",m:`⚠️ Há ${c} treinos com ${kg(last.v)} kg. Registre as repetições de cada série para o app saber quando subir.${joelho}`};
-    return {t:"stall",m:`⚠️ Há ${c} treinos com ${kg(last.v)} kg sem fechar ${n}×${alvo}. Foque em +1 repetição por série.`};
+    const abaixo=[]; for(let k=0;k<n;k++){ const x=num((last.r||[])[k]); if(x===null||x<alvo) abaixo.push(`série ${k+1}${x!==null?` (${x})`:""}`); }
+    return {t:"stall",m:`⚠️ Há ${c} treinos com ${kg(last.v)} kg. Ficaram abaixo de ${alvo}: ${abaixo.join(", ")}. Busque chegar a ${alvo} nelas antes de subir a carga.`};
   }
   return null;
 }
@@ -794,7 +810,7 @@ $("fileIn").onchange=async e=>{
     const j=JSON.parse(await f.text()); const d=j.dados||j;
     if(!Array.isArray(d.checkins)) throw 0;
     if(!confirm("Importar este backup? Os dados atuais deste aparelho serão substituídos.")) return;
-    S=Object.assign(fresh(),d); if(!d.v) S.v=1; S.reps=S.reps||{A:{},B:{}}; FICHAS = S.v>=2 ? FICHAS_C2 : FICHAS_C1; atualizar23(); if(S.v<2 && S.checkins.filter(c=>c.ciclo===S.ciclo.n).length>=CICLO_MAX) migrar(); save(); renderTreino(); renderSemana(); toast("Backup importado");
+    S=Object.assign(fresh(),d); if(!d.v) S.v=1; S.reps=S.reps||{A:{},B:{}}; FICHAS = S.v>=2 ? FICHAS_C2 : FICHAS_C1; atualizar23(); atualizar34(); if(S.v<2 && S.checkins.filter(c=>c.ciclo===S.ciclo.n).length>=CICLO_MAX) migrar(); save(); renderTreino(); renderSemana(); toast("Backup importado");
   }catch(err){ alert("Esse arquivo não é um backup válido do app."); }
 };
 
